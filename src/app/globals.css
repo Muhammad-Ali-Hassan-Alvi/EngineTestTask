@@ -37,3 +37,101 @@ body {
   font-size: 16px;
   line-height: 22px;
 }
+
+/* Carousel styles */
+.c-cta-carousel__inner {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.c-cta-carousel__content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.c-cta-carousel__title {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.c-cta-carousel__description {
+  font-size: 1rem;
+}
+
+.c-cta-carousel__content-carousel {
+  position: relative;
+  overflow: hidden;
+}
+
+.c-cta-carousel__carousel-overflow {
+  display: flex;
+  width: 100%;
+}
+
+.c-cta-carousel__carousel-slide {
+  min-width: 100%;
+  flex-shrink: 0;
+}
+
+.o-cta-tile {
+  display: block;
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+
+.o-cta-tile__image-container {
+  position: relative;
+  width: 100%;
+  height: 400px;
+}
+
+.o-cta-tile__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.o-cta-tile__btn-container {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.o-cta-tile__btn {
+  background-color: rgba(255, 255, 255, 0.9);
+  padding: 10px 20px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.c-cta-carousel__nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.c-cta-carousel__nav-btn.is-prev {
+  left: 10px;
+}
+
+.c-cta-carousel__nav-btn.o-btn-circle {
+  right: 10px;
+}
+
+.o-btn-circle svg {
+  width: 20px;
+  height: 20px;
+}
