@@ -5,7 +5,8 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 export default function Carousel({ slides }) {
   const [current, setCurrent] = useState(0);
-  const visibleSlides = 3;
+  // Mobile-first: show 2 slides by default, switch to 3 for sm+ screens
+  const [visibleSlides, setVisibleSlides] = useState(2);
 
   const containerRef = useRef(null);
   const slideRef = useRef(null);
@@ -39,6 +40,28 @@ export default function Carousel({ slides }) {
       containerRef.current.style.transform = `translateX(${currentTranslate.current}px)`;
     }
   };
+
+  useEffect(() => {
+    // set visibleSlides based on current viewport (mobile-first)
+    const updateVisible = () => {
+      try {
+        const w = window.innerWidth;
+        // tailwind 'sm' breakpoint is 640px
+        setVisibleSlides(w >= 640 ? 3 : 2);
+      } catch (e) {
+        // ignore during SSR
+      }
+    };
+    updateVisible();
+    window.addEventListener('resize', updateVisible);
+    return () => window.removeEventListener('resize', updateVisible);
+  }, []);
+
+  // Ensure current index is valid when visibleSlides or slides change
+  useEffect(() => {
+    const maxIndex = Math.max(0, slides.length - visibleSlides);
+    if (current > maxIndex) setCurrent(maxIndex);
+  }, [visibleSlides, slides.length]);
 
   useEffect(() => {
     const slideWidth = getSlideWidth();
