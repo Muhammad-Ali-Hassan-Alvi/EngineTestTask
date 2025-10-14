@@ -47,7 +47,7 @@ export default function Navbar() {
         </nav>
 
         <div className="text-[40px] mt-10 font-extrabold text-rose-600">
-          ENGINE
+          Jewel MINE
         </div>
 
         <div className="flex items-center justify-between mt-14">
