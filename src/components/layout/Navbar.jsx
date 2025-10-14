@@ -23,35 +23,29 @@ export default function Navbar() {
         </span>
       </div>
 
-      <div className="h-16 flex items-center justify-between bg-transparent px-12">
-        <nav className="hidden sm:flex items-center gap-8 nav-link mt-14">
-          {/* Updated buttons to directly set the state */}
-          <button
-            onClick={() => setIsMenuOpen(true)}
-            className="text-red-600 font-bold"
-          >
-            Sale
+      <div className="h-16 flex items-center justify-between bg-transparent px-4 sm:px-12">
+        <div className="flex items-center gap-4">
+          {/* Mobile hamburger to open mega menu */}
+          <button onClick={() => setIsMenuOpen(true)} className="sm:hidden p-2">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
           </button>
-          <button onClick={() => setIsMenuOpen(true)} className="font-bold">
-            New In
-          </button>
-          <button onClick={() => setIsMenuOpen(true)} className="font-bold">
-            Men
-          </button>
-          <button onClick={() => setIsMenuOpen(true)} className="font-bold">
-            Women
-          </button>
-          <button onClick={() => setIsMenuOpen(true)} className="font-bold">
-            Kids
-          </button>
-        </nav>
 
-        <div className="text-[40px] mt-10 font-extrabold text-rose-600">
-          Jewel MINE
+          <div className="text-lg font-extrabold text-rose-600">Jewel MINE</div>
         </div>
 
-        <div className="flex items-center justify-between mt-14">
-          <div className="w-[200px] max-w-[40vw] hidden md:block">
+        <nav className="flex gap-4 sm:gap-8 items-center">
+          {/* Desktop nav (visible on sm and up) */}
+          <div className="hidden sm:flex items-center gap-8 nav-link">
+            <Link href="/products?category=sale" className="text-red-600 font-bold">Sale</Link>
+            <Link href="/products?category=new" className="font-bold">New In</Link>
+            <Link href="/products?category=men's%20clothing" className="font-bold">Men</Link>
+            <Link href="/products?category=women's%20clothing" className="font-bold">Women</Link>
+            <Link href="/products?category=kids" className="font-bold">Kids</Link>
+          </div>
+
+          <div className="hidden md:block w-[200px] max-w-[40vw]">
             <input
               placeholder="Search..."
               className="w-40 h-10 rounded-full border-[1.5px] px-5 text-sm bg-transparent text-black border-black placeholder-black"
@@ -105,19 +99,17 @@ export default function Navbar() {
               ></path>
             </svg>
           </Link>
-        </div>
+        </nav>
       </div>
 
-      <div className="sm:hidden px-4 pb-3">
-        <nav className="flex items-center gap-6 text-sm font-bold">
-          {/* Updated buttons for mobile view */}
-          <button onClick={() => setIsMenuOpen(true)} className="text-red-600">
-            Sale
-          </button>
-          <button onClick={() => setIsMenuOpen(true)}>New In</button>
-          <button onClick={() => setIsMenuOpen(true)}>Men</button>
-          <button onClick={() => setIsMenuOpen(true)}>Women</button>
-          <button onClick={() => setIsMenuOpen(true)}>Kids</button>
+      {/* Mobile bottom nav for small screens (mobile-first) */}
+      <div className="sm:hidden fixed bottom-0 left-0 right-0 bg-white border-t px-4 py-2">
+        <nav className="flex items-center justify-between text-sm font-bold">
+          <Link href="/products?category=sale" className="text-red-600">Sale</Link>
+          <Link href="/products?category=new">New In</Link>
+          <Link href="/products?category=men's%20clothing">Men</Link>
+          <Link href="/products?category=women's%20clothing">Women</Link>
+          <Link href="/products?category=kids">Kids</Link>
         </nav>
       </div>
 
