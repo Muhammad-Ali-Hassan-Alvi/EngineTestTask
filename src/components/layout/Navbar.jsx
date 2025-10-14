@@ -1,19 +1,20 @@
 "use client";
 import MegaMenu from "@/app/(components)/MegaMenu";
 import { FaHeart } from "react-icons/fa";
-import Link from 'next/link';
-import { useSelector } from 'react-redux';
-import { useEffect } from 'react';
+import Link from "next/link";
+import { useSelector } from "react-redux";
+import { useEffect, useState } from "react"; // Import useState
 
 export default function Navbar() {
+  const [isMenuOpen, setIsMenuOpen] = useState(false); // State for the menu is now here
   const count = useSelector((s) => s.cart.items.reduce((a, b) => a + b.qty, 0));
   const items = useSelector((s) => s.cart.items);
   const wishCount = useSelector((s) => s.wishlist.items.length);
 
   useEffect(() => {
-    // Debug: log cart items to help trace why cart/wishlist counts don't update
-    console.debug('Navbar cart items:', items);
+    console.debug("Navbar cart items:", items);
   }, [items]);
+
   return (
     <header className="relative top-0 z-40 bg-transparent">
       <div className="h-8 text-[13px] flex items-center bg-white/60 border-b overflow-hidden">
@@ -24,19 +25,23 @@ export default function Navbar() {
 
       <div className="h-16 flex items-center justify-between bg-transparent px-12">
         <nav className="hidden sm:flex items-center gap-8 nav-link mt-14">
-          <button data-open-mega className="text-red-600 font-bold">
+          {/* Updated buttons to directly set the state */}
+          <button
+            onClick={() => setIsMenuOpen(true)}
+            className="text-red-600 font-bold"
+          >
             Sale
           </button>
-          <button className="font-bold" data-open-mega>
+          <button onClick={() => setIsMenuOpen(true)} className="font-bold">
             New In
           </button>
-          <button className="font-bold" data-open-mega>
+          <button onClick={() => setIsMenuOpen(true)} className="font-bold">
             Men
           </button>
-          <button className="font-bold" data-open-mega>
+          <button onClick={() => setIsMenuOpen(true)} className="font-bold">
             Women
           </button>
-          <button className="font-bold" data-open-mega>
+          <button onClick={() => setIsMenuOpen(true)} className="font-bold">
             Kids
           </button>
         </nav>
@@ -54,16 +59,26 @@ export default function Navbar() {
           </div>
 
           <div className="relative flex w-12 justify-between">
-              <Link href="/wishlist" aria-label="Wishlist" className="hidden sm:inline-block relative">
-                <FaHeart className="text-white stroke-black stroke-[40]" size={20} />
-                <span className="absolute -top-2 -right-2 bg-black text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                  {wishCount}
-                </span>
-              </Link>
-            </div>
+            <Link
+              href="/wishlist"
+              aria-label="Wishlist"
+              className="hidden sm:inline-block relative"
+            >
+              <FaHeart
+                className="text-white stroke-black stroke-[40]"
+                size={20}
+              />
+              <span className="absolute -top-2 -right-2 bg-black text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                {wishCount}
+              </span>
+            </Link>
+          </div>
 
-          <Link href="/cart" aria-label="Bag" className="hidden sm:inline-flex items-center justify-center bg-white rounded-full w-10 h-10">
-            {/* Custom SVG Cart Icon */}
+          <Link
+            href="/cart"
+            aria-label="Bag"
+            className="hidden sm:inline-flex items-center justify-center bg-white rounded-full w-10 h-10"
+          >
             <svg
               id="silentLuxuryCart"
               width="17"
@@ -95,17 +110,19 @@ export default function Navbar() {
 
       <div className="sm:hidden px-4 pb-3">
         <nav className="flex items-center gap-6 text-sm font-bold">
-          <button data-open-mega className="text-red-600">
+          {/* Updated buttons for mobile view */}
+          <button onClick={() => setIsMenuOpen(true)} className="text-red-600">
             Sale
           </button>
-          <button data-open-mega>New In</button>
-          <button data-open-mega>Men</button>
-          <button data-open-mega>Women</button>
-          <button data-open-mega>Kids</button>
+          <button onClick={() => setIsMenuOpen(true)}>New In</button>
+          <button onClick={() => setIsMenuOpen(true)}>Men</button>
+          <button onClick={() => setIsMenuOpen(true)}>Women</button>
+          <button onClick={() => setIsMenuOpen(true)}>Kids</button>
         </nav>
       </div>
 
-      <MegaMenu />
+      {/* Pass the state and a function to close it down as props */}
+      <MegaMenu open={isMenuOpen} onClose={() => setIsMenuOpen(false)} />
     </header>
   );
 }
