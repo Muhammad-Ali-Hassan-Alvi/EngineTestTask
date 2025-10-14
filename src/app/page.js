@@ -1,4 +1,4 @@
-import Image from "next/image";
+// import Image from "next/image";
 import HeroSlider from "@/components/home/HeroSlider";
 import CategoryCard from "@/components/home/CategoryCard";
 import Banner from "@/components/common/Banner";
@@ -155,10 +155,10 @@ async function fetchJewelrySlides() {
   const data = await res.json();
   // Map to slide shape expected by Carousel
   return data.map((p) => ({
-    href: `/products/${p.id}`,
+    href: `/products?category=jewelery`,
     imageSrc: p.image,
     alt: p.title,
-    buttonText: p.title,
+    buttonText: 'Shop Jewelry',
   }));
 }
 

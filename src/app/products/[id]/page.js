@@ -1,4 +1,5 @@
 import Image from "next/image";
+import ProductActions from '@/components/ProductActions';
 
 async function fetchProduct(id) {
   const res = await fetch(`https://fakestoreapi.com/products/${id}`, { cache: 'no-store' });
@@ -47,16 +48,7 @@ export default async function ProductDetail({ params }) {
             <div className="mt-2 text-sm">{product.description}</div>
           </div>
 
-          <div>
-            <div className="mb-2 text-sm font-medium">Size</div>
-            <div className="flex gap-2">
-              {["XS", "S", "M", "L", "XL"].map((s) => (
-                <button key={s} className="w-10 h-10 border rounded text-sm hover:bg-gray-100">{s}</button>
-              ))}
-            </div>
-          </div>
-
-          <button className="w-full h-10 rounded bg-black text-white">Add to cart</button>
+          <ProductActions product={product} />
 
           <div className="divide-y">
             <details className="py-4"><summary className="cursor-pointer font-medium">Size Chart</summary><div className="pt-2 text-sm text-gray-600">Chest, Length, Sleeves etc.</div></details>
@@ -66,16 +58,16 @@ export default async function ProductDetail({ params }) {
         </div>
       </div>
 
-      <section className="mt-12">
+      {/* <section className="mt-12">
         <h2 className="text-lg font-semibold mb-4">You might also like</h2>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
           {[0, 1, 2, 3].map((i) => (
             <div key={i} className="relative aspect-[3/4] bg-gray-100">
-              <Image src={product.images[i % product.images.length]} alt="Related" fill className="object-cover" />
+              <img src={product.images[i % product.images.length]} alt="Related" fill className="object-cover" />
             </div>
           ))}
         </div>
-      </section>
+      </section> */}
     </main>
   );
 }

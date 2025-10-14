@@ -1,8 +1,19 @@
 "use client";
 import MegaMenu from "@/app/(components)/MegaMenu";
 import { FaHeart } from "react-icons/fa";
+import Link from 'next/link';
+import { useSelector } from 'react-redux';
+import { useEffect } from 'react';
 
 export default function Navbar() {
+  const count = useSelector((s) => s.cart.items.reduce((a, b) => a + b.qty, 0));
+  const items = useSelector((s) => s.cart.items);
+  const wishCount = useSelector((s) => s.wishlist.items.length);
+
+  useEffect(() => {
+    // Debug: log cart items to help trace why cart/wishlist counts don't update
+    console.debug('Navbar cart items:', items);
+  }, [items]);
   return (
     <header className="relative top-0 z-40 bg-transparent">
       <div className="h-8 text-[13px] flex items-center bg-white/60 border-b overflow-hidden">
@@ -43,24 +54,15 @@ export default function Navbar() {
           </div>
 
           <div className="relative flex w-12 justify-between">
-            <button
-              aria-label="Wishlist"
-              className="hidden sm:inline-block relative"
-            >
-              <FaHeart
-                className="text-white stroke-black stroke-[40]"
-                size={20}
-              />
-              <span className="absolute -top-2 -right-2 bg-black text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                0
-              </span>
-            </button>
-          </div>
+              <Link href="/wishlist" aria-label="Wishlist" className="hidden sm:inline-block relative">
+                <FaHeart className="text-white stroke-black stroke-[40]" size={20} />
+                <span className="absolute -top-2 -right-2 bg-black text-white text-[9px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
+                  {wishCount}
+                </span>
+              </Link>
+            </div>
 
-          <button
-            aria-label="Bag"
-            className="hidden sm:inline-flex items-center justify-center bg-white rounded-full w-10 h-10"
-          >
+          <Link href="/cart" aria-label="Bag" className="hidden sm:inline-flex items-center justify-center bg-white rounded-full w-10 h-10">
             {/* Custom SVG Cart Icon */}
             <svg
               id="silentLuxuryCart"
@@ -87,7 +89,7 @@ export default function Navbar() {
                 strokeLinecap="square"
               ></path>
             </svg>
-          </button>
+          </Link>
         </div>
       </div>
 

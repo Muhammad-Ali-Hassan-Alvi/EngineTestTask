@@ -1,5 +1,5 @@
 "use client";
-import Image from "next/image";
+// import Image from "next/image";
 import { useEffect, useState } from "react";
 
 export default function HeroSlider({ images }) {
@@ -25,7 +25,7 @@ function Slider({ images }) {
     <div className="h-full w-full">
       {images.map((src, i) => (
         <div key={i} className={`absolute inset-0 transition-opacity duration-700 ${i === index ? 'opacity-100' : 'opacity-0'}`}>
-          <Image src={src} alt={`Slide ${i+1}`} fill className="object-cover" priority={i===0} />
+          <img src={src} alt={`Slide ${i+1}`} fill className="object-cover" priority={i===0} />
         </div>
       ))}
       <button aria-label="Prev" onClick={() => go(-1)} className="absolute left-4 top-1/2 -translate-y-1/2 h-10 w-10 rounded-full bg-white/80 grid place-items-center">‹</button>
