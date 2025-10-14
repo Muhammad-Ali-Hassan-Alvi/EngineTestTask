@@ -54,7 +54,7 @@ export default function Newsletter() {
               type="submit"
               className="w-full sm:w-auto bg-gray-900 text-white px-4 py-4 text-lg hover:bg-gray-800 transition"
             >
-              Join Engine
+              Join JewelMine
             </button>
           </form>
         </div>

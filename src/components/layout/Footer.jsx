@@ -12,7 +12,7 @@ export default function Footer() {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-10 text-sm text-gray-600 grid grid-cols-2 sm:grid-cols-4 gap-8">
         <div>
           <div className="text-black font-bold text-lg mb-3">
-            Connect With Engine
+            Connect With JewelMine
           </div>
           <ul className="space-y-1">
             <li className="flex items-center gap-1">
@@ -34,7 +34,7 @@ export default function Footer() {
               <span>
                 <FaEnvelope />
               </span>
-              <span>online@engine.com.pk</span>
+              <span>online@jewelmine.com.pk</span>
             </li>
           </ul>
         </div>

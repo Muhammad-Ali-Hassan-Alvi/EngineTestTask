@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { FaChevronDown } from "react-icons/fa";
+import Link from 'next/link';
 
 // Data remains the same...
 const menuData = {
@@ -104,15 +105,20 @@ export default function MegaMenu({ open, onClose }) {
                   {col.heading}
                 </div>
                 <ul className="space-y-3 text-[15px] text-gray-600">
-                  {col.items.map((it) => (
-                    <li
-                      key={it}
-                      className="flex cursor-pointer items-center justify-between hover:text-black"
-                    >
-                      <span>{it}</span>
-                      <FaChevronDown className="-rotate-90 text-xs" />
-                    </li>
-                  ))}
+                  {col.items.map((it) => {
+                    // Build a simple href that the products page can consume
+                    const href = `/products?category=${encodeURIComponent(activeTab)}&filter=${encodeURIComponent(
+                      it
+                    )}`;
+                    return (
+                      <li key={it} className="hover:text-black">
+                        <Link href={href} onClick={onClose} className="flex items-center justify-between w-full">
+                          <span>{it}</span>
+                          <FaChevronDown className="-rotate-90 text-xs" />
+                        </Link>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
             ))}

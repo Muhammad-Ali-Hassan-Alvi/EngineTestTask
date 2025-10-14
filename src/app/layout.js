@@ -7,8 +7,8 @@ import Providers from '@/components/Providers';
 const montserrat = Montserrat({ subsets: ["latin"], weight: ["300","400","500","600","700","800","900"], display: "swap" });
 
 export const metadata = {
-  title: "Engine Official: Western Wear Clothing Store!",
-  description: "Engine storefront clone in Next.js",
+  title: "JewelMine Official: Western Wear Clothing Store!",
+  description: "JewelMine storefront clone in Next.js",
 };
 
 export default function RootLayout({ children }) {
