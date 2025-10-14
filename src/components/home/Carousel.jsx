@@ -1,5 +1,6 @@
 "use client";
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 export default function Carousel({ slides }) {
@@ -160,9 +161,20 @@ export default function Carousel({ slides }) {
                 </div>
               )}
 
-              <button className="relative z-10 bg-white text-black px-6 py-2 shadow text-lg hover:bg-gray-100 transition-transform duration-300 transform group-hover:-translate-y-8 -bottom-48">
-                {slide.buttonText}
-              </button>
+              {slide.href && (slide.href.startsWith('/') ? (
+                <Link href={slide.href} className="relative z-10 bg-white text-black px-6 py-2 shadow text-lg hover:bg-gray-100 transition-transform duration-300 transform group-hover:-translate-y-8 -bottom-48">
+                  {slide.buttonText}
+                </Link>
+              ) : (
+                <a
+                  href={slide.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="relative z-10 bg-white text-black px-6 py-2 shadow text-lg hover:bg-gray-100 transition-transform duration-300 transform group-hover:-translate-y-8 -bottom-48"
+                >
+                  {slide.buttonText}
+                </a>
+              ))}
             </div>
           </div>
         ))}

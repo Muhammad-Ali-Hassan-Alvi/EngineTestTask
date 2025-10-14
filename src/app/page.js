@@ -14,54 +14,54 @@ const BANNERS = [
 
 const MEN_SLIDES = [
   {
-    href: "/collections/pakistan-day-sale-men",
+    href: "/products?category=clothing",
     imageSrc:
       "//engine.com.pk/cdn/shop/collections/Men_Sale_edfccb4a-7138-47b9-9330-4c9150ed305e.jpg?v=1759712503",
     alt: "Summer Sale",
     buttonText: "Summer Sale",
   },
   {
-    href: "/collections/men-polo-shirt",
+    href: "/products?category=clothing",
     imageSrc: "//engine.com.pk/cdn/shop/collections/Polo.jpg?v=1757855160",
     alt: "Polo Shirts",
     buttonText: "Polo Shirts",
   },
   {
-    href: "/collections/men-tshirts",
+    href: "/products?category=clothing",
     imageSrc:
       "//engine.com.pk/cdn/shop/collections/MT1056-YEL_4.jpg?v=1757855191",
     alt: "T-Shirts",
     buttonText: "T-Shirts",
   },
   {
-    href: "/collections/men-trouser",
+    href: "/products?category=clothing",
     imageSrc:
       "//engine.com.pk/cdn/shop/collections/mu1002-navy_3.jpg?v=1757855216",
     alt: "Trousers",
     buttonText: "Trousers",
   },
   {
-    href: "/collections/men-bottoms",
+    href: "/products?category=clothing",
     imageSrc:
       "//engine.com.pk/cdn/shop/collections/MD1013-WHT_4.jpg?v=1757855239",
     alt: "Bottoms",
     buttonText: "Bottoms",
   },
   {
-    href: "/collections/men-casual-shirt",
+    href: "/products?category=clothing",
     imageSrc: "//engine.com.pk/cdn/shop/collections/Casual.jpg?v=1757855281",
     alt: "Casual Shirts",
     buttonText: "Casual Shirts",
   },
   {
-    href: "/collections/men-suits",
+    href: "/products?category=clothing",
     imageSrc:
       "//engine.com.pk/cdn/shop/collections/FE5006-BLU_2.jpg?v=1757855334",
     alt: "Suits",
     buttonText: "Suits",
   },
   {
-    href: "/collections/men-fragrances",
+    href: "/products?category=clothing",
     imageSrc:
       "//engine.com.pk/cdn/shop/collections/Men_Fragrance.jpg?v=1742895896",
     alt: "Fragrance",
@@ -148,7 +148,23 @@ const KIDS_FEMALE_SLIDES = [
   },
 ];
 
-export default function Home() {
+async function fetchJewelrySlides() {
+  // Fetch jewelry category from fakestoreapi
+  const res = await fetch('https://fakestoreapi.com/products/category/jewelery', { cache: 'no-store' });
+  if (!res.ok) return [];
+  const data = await res.json();
+  // Map to slide shape expected by Carousel
+  return data.map((p) => ({
+    href: `/products/${p.id}`,
+    imageSrc: p.image,
+    alt: p.title,
+    buttonText: p.title,
+  }));
+}
+
+export default async function Home() {
+  const jewelrySlides = await fetchJewelrySlides();
+
   return (
     <main className="min-h-screen">
       <Banner src={BANNERS[0]} alt={"Hero Section Banner"} />
@@ -164,9 +180,9 @@ export default function Home() {
       <section className="mx-auto py-8">
         <Banner src={BANNERS[1]} alt={"Hero Section Banner"} />
         <Carousel
-          title="Men's Collection"
-          description="Explore our latest men's fashion"
-          slides={MEN_SLIDES}
+          title="Featured Jewelry"
+          description="Explore our jewelery collection"
+          slides={jewelrySlides.length ? jewelrySlides : MEN_SLIDES}
         />
       </section>
 
@@ -189,7 +205,7 @@ export default function Home() {
       </section>
 
       <section className="mx-auto py-8">
-        {/* <Newsletter /> */}
+        <Newsletter />
       </section>
     </main>
   );
