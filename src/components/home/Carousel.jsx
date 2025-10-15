@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from "react";
 import Link from "next/link";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
+// Hi this is a test for username in git
 export default function Carousel({ slides }) {
   const [current, setCurrent] = useState(0);
   const [visibleSlides, setVisibleSlides] = useState(2);
