@@ -17,6 +17,8 @@ export default function Carousel({ slides }) {
   const isDragging = useRef(false);
   const animationRef = useRef(null);
 
+
+  
   const velocityRef = useRef(0);
   const lastXRef = useRef(0);
   const lastTimeRef = useRef(0);
