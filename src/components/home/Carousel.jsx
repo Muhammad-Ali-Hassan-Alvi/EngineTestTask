@@ -7,8 +7,8 @@ export default function Carousel({ slides }) {
   const [current, setCurrent] = useState(0);
   const [visibleSlides, setVisibleSlides] = useState(2);
 
-  const containerRef = useRef(null);
-  const slideRef = useRef(null);
+  const containerRef = useRef(null); // track element
+  const slideRef = useRef(null); // first slide to measure width
 
   const startX = useRef(0);
   const currentTranslate = useRef(0);
@@ -45,6 +45,7 @@ export default function Carousel({ slides }) {
     const updateVisible = () => {
       try {
         const w = window.innerWidth;
+        // sm breakpoint ~640px
         setVisibleSlides(w >= 640 ? 3 : 2);
       } catch {}
     };
@@ -56,7 +57,7 @@ export default function Carousel({ slides }) {
   useEffect(() => {
     const maxIndex = Math.max(0, slides.length - visibleSlides);
     if (current > maxIndex) setCurrent(maxIndex);
-  }, [visibleSlides, slides.length]);
+  }, [visibleSlides, slides.length]); // keep within bounds when resizing
 
   useEffect(() => {
     const slideWidth = getSlideWidth();
@@ -64,6 +65,7 @@ export default function Carousel({ slides }) {
       typeof window !== "undefined" &&
       window.matchMedia &&
       window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
     if (containerRef.current) {
       containerRef.current.style.transition = reduceMotion
         ? "none"
@@ -100,16 +102,27 @@ export default function Carousel({ slides }) {
     return value;
   };
 
+  // NOTE: attach pointer handlers to the track (containerRef), not the outer wrapper
   const handlePointerDown = (e) => {
+    // ignore non-left clicks and interactive elements (safety)
+    if (e.button !== 0) return;
+    const target = e.target;
+    if (target && target.closest('button, a, input, textarea, [role="button"]'))
+      return;
+
     if (!containerRef.current) return;
     isDragging.current = true;
     pointerIdRef.current = e.pointerId;
-    containerRef.current.setPointerCapture(e.pointerId);
+
+    e.currentTarget.setPointerCapture(e.pointerId);
+
     startX.current = e.clientX;
     lastXRef.current = e.clientX;
     lastTimeRef.current = performance.now();
     velocityRef.current = 0;
-    containerRef.current.style.transition = ""; // disable during drag
+
+    // disable transition during drag
+    containerRef.current.style.transition = "";
     document.body.style.userSelect = "none";
   };
 
@@ -131,7 +144,7 @@ export default function Carousel({ slides }) {
 
     const deltaX = e.clientX - lastXRef.current;
     const deltaT = Math.max(1, now - lastTimeRef.current);
-    velocityRef.current = deltaX / deltaT;
+    velocityRef.current = deltaX / deltaT; // px/ms
     lastXRef.current = e.clientX;
     lastTimeRef.current = now;
 
@@ -143,15 +156,25 @@ export default function Carousel({ slides }) {
     });
   };
 
-  const handlePointerUp = () => {
+  const handlePointerUp = (e) => {
     if (!isDragging.current) return;
     isDragging.current = false;
     document.body.style.userSelect = "auto";
 
+    // release pointer capture if held
+    try {
+      if (
+        e.currentTarget?.releasePointerCapture &&
+        pointerIdRef.current != null
+      ) {
+        e.currentTarget.releasePointerCapture(pointerIdRef.current);
+      }
+    } catch {}
+
     const slideWidth = getSlideWidth();
     const movedBy = currentTranslate.current - prevTranslate.current;
 
-    const v = velocityRef.current;
+    const v = velocityRef.current; // px/ms
     const isFlick = Math.abs(v) > 0.5;
 
     let newIndex = current;
@@ -180,11 +203,6 @@ export default function Carousel({ slides }) {
     <div
       className="relative w-full overflow-hidden py-6 group select-none"
       style={{ touchAction: "pan-y" }}
-      onPointerDown={handlePointerDown}
-      onPointerMove={handlePointerMove}
-      onPointerUp={handlePointerUp}
-      onPointerCancel={handlePointerUp}
-      onPointerLeave={() => isDragging.current && handlePointerUp()}
       onWheel={handleWheel}
       role="region"
       aria-roledescription="carousel"
@@ -195,7 +213,16 @@ export default function Carousel({ slides }) {
         style={{
           width: `${(slides.length / visibleSlides) * 100}%`,
           willChange: "transform",
+          touchAction: "pan-y",
         }}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        onPointerCancel={handlePointerUp}
+        onPointerLeave={() =>
+          isDragging.current &&
+          handlePointerUp({ currentTarget: containerRef.current })
+        }
       >
         {slides.map((slide, idx) => (
           <div
