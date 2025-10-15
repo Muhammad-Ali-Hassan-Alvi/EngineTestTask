@@ -5,31 +5,31 @@ import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 export default function Carousel({ slides }) {
   const [current, setCurrent] = useState(0);
-  // Mobile-first: show 2 slides by default, switch to 3 for sm+ screens
   const [visibleSlides, setVisibleSlides] = useState(2);
 
   const containerRef = useRef(null);
   const slideRef = useRef(null);
+
   const startX = useRef(0);
   const currentTranslate = useRef(0);
   const prevTranslate = useRef(0);
   const isDragging = useRef(false);
   const animationRef = useRef(null);
 
-  const getSlideWidth = () => {
-    return slideRef.current ? slideRef.current.offsetWidth : 0;
-  };
+  const velocityRef = useRef(0);
+  const lastXRef = useRef(0);
+  const lastTimeRef = useRef(0);
+  const pointerIdRef = useRef(null);
+
+  const getSlideWidth = () =>
+    slideRef.current ? slideRef.current.offsetWidth : 0;
 
   const nextSlide = () => {
-    if (current < slides.length - visibleSlides) {
-      setCurrent((prev) => prev + 1);
-    }
+    if (current < slides.length - visibleSlides) setCurrent((p) => p + 1);
   };
 
   const prevSlide = () => {
-    if (current > 0) {
-      setCurrent((prev) => prev - 1);
-    }
+    if (current > 0) setCurrent((p) => p - 1);
   };
 
   const setPositionByIndex = () => {
@@ -42,22 +42,17 @@ export default function Carousel({ slides }) {
   };
 
   useEffect(() => {
-    // set visibleSlides based on current viewport (mobile-first)
     const updateVisible = () => {
       try {
         const w = window.innerWidth;
-        // tailwind 'sm' breakpoint is 640px
         setVisibleSlides(w >= 640 ? 3 : 2);
-      } catch (e) {
-        // ignore during SSR
-      }
+      } catch {}
     };
     updateVisible();
-    window.addEventListener('resize', updateVisible);
-    return () => window.removeEventListener('resize', updateVisible);
+    window.addEventListener("resize", updateVisible);
+    return () => window.removeEventListener("resize", updateVisible);
   }, []);
 
-  // Ensure current index is valid when visibleSlides or slides change
   useEffect(() => {
     const maxIndex = Math.max(0, slides.length - visibleSlides);
     if (current > maxIndex) setCurrent(maxIndex);
@@ -65,34 +60,82 @@ export default function Carousel({ slides }) {
 
   useEffect(() => {
     const slideWidth = getSlideWidth();
+    const reduceMotion =
+      typeof window !== "undefined" &&
+      window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (containerRef.current) {
-      containerRef.current.style.transition = "transform 0.5s ease-out";
+      containerRef.current.style.transition = reduceMotion
+        ? "none"
+        : "transform 350ms cubic-bezier(.22,.61,.36,1)";
       containerRef.current.style.transform = `translateX(-${
         current * slideWidth
       }px)`;
     }
   }, [current]);
 
-  const handleStart = (x, isTouchEvent = false) => {
-    isDragging.current = true;
-    startX.current = x;
-    if (containerRef.current) {
-      containerRef.current.style.transition = ""; // Disable transition during drag
-    }
-    document.body.style.userSelect = "none"; // Prevent text selection during drag
+  useEffect(() => {
+    const onEnd = () => {
+      const slideWidth = getSlideWidth();
+      prevTranslate.current = -current * slideWidth;
+    };
+    const node = containerRef.current;
+    if (!node) return;
+    node.addEventListener("transitionend", onEnd);
+    return () => node.removeEventListener("transitionend", onEnd);
+  }, [current]);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    const ro = new ResizeObserver(() => {
+      setPositionByIndex();
+    });
+    ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, [current, visibleSlides]);
+
+  const rubberband = (value, min, max) => {
+    if (value < min) return min + (value - min) / 3;
+    if (value > max) return max + (value - max) / 3;
+    return value;
   };
 
-  const handleMove = (x, isTouchEvent = false) => {
+  const handlePointerDown = (e) => {
+    if (!containerRef.current) return;
+    isDragging.current = true;
+    pointerIdRef.current = e.pointerId;
+    containerRef.current.setPointerCapture(e.pointerId);
+    startX.current = e.clientX;
+    lastXRef.current = e.clientX;
+    lastTimeRef.current = performance.now();
+    velocityRef.current = 0;
+    containerRef.current.style.transition = ""; // disable during drag
+    document.body.style.userSelect = "none";
+  };
+
+  const handlePointerMove = (e) => {
     if (!isDragging.current) return;
 
-    const currentX = x;
-    const diff = currentX - startX.current;
-    currentTranslate.current = prevTranslate.current + diff;
+    const now = performance.now();
+    const dx = e.clientX - startX.current;
 
-    if (animationRef.current) {
-      cancelAnimationFrame(animationRef.current);
-    }
+    const slideWidth = getSlideWidth();
+    const minTranslate = -(slides.length - visibleSlides) * slideWidth;
+    const maxTranslate = 0;
 
+    currentTranslate.current = rubberband(
+      prevTranslate.current + dx,
+      minTranslate,
+      maxTranslate
+    );
+
+    const deltaX = e.clientX - lastXRef.current;
+    const deltaT = Math.max(1, now - lastTimeRef.current);
+    velocityRef.current = deltaX / deltaT;
+    lastXRef.current = e.clientX;
+    lastTimeRef.current = now;
+
+    if (animationRef.current) cancelAnimationFrame(animationRef.current);
     animationRef.current = requestAnimationFrame(() => {
       if (containerRef.current) {
         containerRef.current.style.transform = `translateX(${currentTranslate.current}px)`;
@@ -100,7 +143,7 @@ export default function Carousel({ slides }) {
     });
   };
 
-  const handleEnd = () => {
+  const handlePointerUp = () => {
     if (!isDragging.current) return;
     isDragging.current = false;
     document.body.style.userSelect = "auto";
@@ -108,59 +151,51 @@ export default function Carousel({ slides }) {
     const slideWidth = getSlideWidth();
     const movedBy = currentTranslate.current - prevTranslate.current;
 
-    // Determine whether to switch to the next/prev slide
-    if (movedBy < -80 && current < slides.length - visibleSlides) {
-      setCurrent((prev) => prev + 1);
-    } else if (movedBy > 80 && current > 0) {
-      setCurrent((prev) => prev - 1);
+    const v = velocityRef.current;
+    const isFlick = Math.abs(v) > 0.5;
+
+    let newIndex = current;
+    if (isFlick) {
+      if (v < 0 && current < slides.length - visibleSlides)
+        newIndex = current + 1;
+      if (v > 0 && current > 0) newIndex = current - 1;
     } else {
-      // If not moved enough, snap back to the original position
-      if (containerRef.current) {
-        containerRef.current.style.transition = "transform 0.3s ease-out";
-        containerRef.current.style.transform = `translateX(${prevTranslate.current}px)`;
-      }
+      if (movedBy < -60 && current < slides.length - visibleSlides)
+        newIndex = current + 1;
+      else if (movedBy > 60 && current > 0) newIndex = current - 1;
     }
-    // Update prevTranslate to the new position after the slide change effect completes
-    setTimeout(() => {
-      const newSlideWidth = getSlideWidth();
-      prevTranslate.current = -current * newSlideWidth;
-    }, 500);
+
+    setCurrent(newIndex);
   };
 
   const handleWheel = (e) => {
-    // Check for horizontal scroll (typical for trackpads)
     if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) {
       e.preventDefault();
-      if (e.deltaX > 0) {
-        nextSlide();
-      } else {
-        prevSlide();
-      }
+      if (e.deltaX > 0) nextSlide();
+      else prevSlide();
     }
   };
 
   return (
     <div
       className="relative w-full overflow-hidden py-6 group select-none"
-      onMouseDown={(e) => {
-        e.preventDefault();
-        handleStart(e.clientX);
-      }}
-      onMouseMove={(e) => handleMove(e.clientX)}
-      onMouseUp={handleEnd}
-      onMouseLeave={() => isDragging.current && handleEnd()}
-      onTouchStart={(e) => handleStart(e.touches[0].clientX, true)}
-      onTouchMove={(e) => {
-        e.preventDefault();
-        handleMove(e.touches[0].clientX, true);
-      }}
-      onTouchEnd={handleEnd}
+      style={{ touchAction: "pan-y" }}
+      onPointerDown={handlePointerDown}
+      onPointerMove={handlePointerMove}
+      onPointerUp={handlePointerUp}
+      onPointerCancel={handlePointerUp}
+      onPointerLeave={() => isDragging.current && handlePointerUp()}
       onWheel={handleWheel}
+      role="region"
+      aria-roledescription="carousel"
     >
       <div
         ref={containerRef}
         className="flex"
-        style={{ width: `${(slides.length / visibleSlides) * 100}%` }}
+        style={{
+          width: `${(slides.length / visibleSlides) * 100}%`,
+          willChange: "transform",
+        }}
       >
         {slides.map((slide, idx) => (
           <div
@@ -184,20 +219,24 @@ export default function Carousel({ slides }) {
                 </div>
               )}
 
-              {slide.href && (slide.href.startsWith('/') ? (
-                <Link href={slide.href} className="relative z-10 bg-white text-black px-6 py-2 shadow text-lg hover:bg-gray-100 transition-transform duration-300 transform group-hover:-translate-y-8 -bottom-48">
-                  {slide.buttonText}
-                </Link>
-              ) : (
-                <a
-                  href={slide.href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="relative z-10 bg-white text-black px-6 py-2 shadow text-lg hover:bg-gray-100 transition-transform duration-300 transform group-hover:-translate-y-8 -bottom-48"
-                >
-                  {slide.buttonText}
-                </a>
-              ))}
+              {slide.href &&
+                (slide.href.startsWith("/") ? (
+                  <Link
+                    href={slide.href}
+                    className="relative z-10 bg-white text-black px-6 py-2 shadow text-lg hover:bg-gray-100 transition-transform duration-300 transform group-hover:-translate-y-8 -bottom-48"
+                  >
+                    {slide.buttonText}
+                  </Link>
+                ) : (
+                  <a
+                    href={slide.href}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="relative z-10 bg-white text-black px-6 py-2 shadow text-lg hover:bg-gray-100 transition-transform duration-300 transform group-hover:-translate-y-8 -bottom-48"
+                  >
+                    {slide.buttonText}
+                  </a>
+                ))}
             </div>
           </div>
         ))}
@@ -208,6 +247,7 @@ export default function Carousel({ slides }) {
         onClick={prevSlide}
         className="absolute top-1/2 left-7 -translate-y-1/2 bg-white hover:bg-white/50 text-gray-800 hover:text-white rounded-full p-6 shadow-md z-10 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"
         disabled={current === 0}
+        aria-label="Previous slide"
         style={{
           opacity: current === 0 ? 0 : "",
           cursor: current === 0 ? "not-allowed" : "pointer",
@@ -220,6 +260,7 @@ export default function Carousel({ slides }) {
         onClick={nextSlide}
         className="absolute top-1/2 right-7 -translate-y-1/2 bg-white hover:bg-white/50 text-gray-800 hover:text-white rounded-full p-6 shadow-md z-10 opacity-0 group-hover:opacity-100 transition-all duration-300 backdrop-blur-sm"
         disabled={current >= slides.length - visibleSlides}
+        aria-label="Next slide"
         style={{
           opacity: current >= slides.length - visibleSlides ? 0 : "",
           cursor:
